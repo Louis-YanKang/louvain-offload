@@ -74,7 +74,7 @@ void sumVertexDegree(const Graph &g, std::vector<GraphWeight> &vDegree, std::vec
         int const nthreads = omp_get_num_threads();             
         int const tid = omp_get_thread_num();
 
-  #pragma omp parallel for 
+  #pragma omp for 
     for (GraphElem i = 0; i < nv; i+=ELEMS_PER_CACHE_LINE) {
       GraphElem e0, e1;
       GraphWeight tw = 0.0;
@@ -91,7 +91,8 @@ void sumVertexDegree(const Graph &g, std::vector<GraphWeight> &vDegree, std::vec
       if (vertexDegreej+ZFILL_OFFSET < zfill_limit) {
           zfill(vertexDegreej+ZFILL_OFFSET);
       } 
-  
+      
+      //#pragma omp parallel for
       #pragma omp simd
       for(size_t j=0; j < ELEMS_PER_CACHE_LINE; j+=1){
 
@@ -103,6 +104,7 @@ void sumVertexDegree(const Graph &g, std::vector<GraphWeight> &vDegree, std::vec
 
           //vDegree[i] = tw;
       }//index j
+
         localCinfo[i].degree = tw;
         localCinfo[i].size = 1L;
     }

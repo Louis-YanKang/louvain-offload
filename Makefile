@@ -2,8 +2,8 @@
 # Compiler Options
 #===============================================================================
 
-COMPILER    = gnu
-OPTIMIZE    = yes
+COMPILER    = armclang
+OPTIMIZE    = no
 DEBUG       = no
 PROFILE     = no
 SM = cc70   # --- NVIDIA arch
@@ -34,7 +34,7 @@ OPTFLAGS = -DPRINT_DIST_STATS -DPRINT_EXTRA_NEDGES
 # GCC Compiler
 ifeq ($(COMPILER),gnu)
   CC = g++
-  CFLAGS += -fopenmp -flto
+  CFLAGS += -fopenmp -flto -Ofast
 ifeq ($(ENABLE_OMP_OFFLOAD),1)
   CFLAGS += -fopenmp -flto
 endif
@@ -63,7 +63,7 @@ endif
 # LLVM Clang Compiler 
 ifeq ($(COMPILER),armclang)
   CC = armclang++
-	CFLAGS += -fopenmp
+	CFLAGS += -fopenmp -Ofast
 ifeq ($(ENABLE_OMP_OFFLOAD),1)
   #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda  -fopenmp-cuda-mode 
   #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda -Xopenmp-target --cuda-path=${OLCF_CUDA_ROOT}  -Xcuda-ptxas --maxrregcount=60 -fopenmp-cuda-mode
@@ -75,7 +75,7 @@ endif
 # LLVM Clang Compiler 
 ifeq ($(COMPILER),FCC)
   CC = FCC
-	CFLAGS += -Kopenmp
+	CFLAGS += -Kopenmp -Kfast
 	#-Kzfill = 100
 ifeq ($(ENABLE_OMP_OFFLOAD),1)
   #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda  -fopenmp-cuda-mode 
@@ -135,7 +135,7 @@ endif
 ifeq ($(ENABLE_OMP_OFFLOAD),1)
   CFLAGS += -DUSE_OMP_OFFLOAD
 else
-  CFLAGS += -fopenmp -DGRAPH_FT_LOAD=4 #-I/usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/
+  CFLAGS += -DGRAPH_FT_LOAD=4 #-I/usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/
 endif
 
 # Compiler Trace  
