@@ -1,0 +1,33 @@
+Read file from 4 sockets
+Input file: /lustre/home/yakang/NEVE/neve/neve/com-orkut.ungraph.bin
+
+--------------------------------------
+Graph characteristics
+--------------------------------------
+Number of vertices: 3072441
+Number of edges: 234370166
+Maximum number of edges: 33313
+Median number of edges: 45
+Expected value of X^2: 420.184
+Variance: 5398.67
+Standard deviation: 73.4757
+--------------------------------------
+Time to read input file and create graph (in s): 16.5806
+Louvain initLouvain time: 0.0970852
+Louvain cleanCWandCU time: 0.18899
+Louvain execLouvainIteration time: 1506.71
+Louvain updateLocalCinfo time: 0.0378752
+Louvain computeModularity time: 0.0508145
+Louvain update time (host): 0.0340264
+Louvain execution time: 34.3247
+-------------------------------------------------------
+Maximum threads: 48, requested threads: 48
+Input file: /lustre/home/yakang/NEVE/neve/neve/com-orkut.ungraph.bin
+-------------------------------------------------------
+-------------------------------------------------------
+64-bit datatype
+-------------------------------------------------------
+Total time (in s): 34.4302
+Modularity, #Iterations: 0.643796, 68
+MODS (final modularity * time): 22.166
+-------------------------------------------------------
