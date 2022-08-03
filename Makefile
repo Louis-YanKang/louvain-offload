@@ -2,13 +2,13 @@
 # Compiler Options
 #===============================================================================
 
-COMPILER    = llvm_nv
+COMPILER    = gnu
 OPTIMIZE    = yes
 DEBUG       = no
 PROFILE     = no
 SM = cc70   # --- NVIDIA arch
 ARCH = gfx90a # --- AMD arch
-ENABLE_OMP_OFFLOAD = 1
+ENABLE_OMP_OFFLOAD = 0
 SAVE_TEMP = 0
 
 #===============================================================================
@@ -33,7 +33,8 @@ OPTFLAGS = -DPRINT_DIST_STATS -DPRINT_EXTRA_NEDGES
 
 # GCC Compiler
 ifeq ($(COMPILER),gnu)
-  CC = gcc
+  CC = g++
+  CFLAGS += -fopenmp -flto
 ifeq ($(ENABLE_OMP_OFFLOAD),1)
   CFLAGS += -fopenmp -flto
 endif
@@ -57,6 +58,35 @@ ifeq ($(ENABLE_OMP_OFFLOAD),1)
   #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda -Xopenmp-target --cuda-path=${OLCF_CUDA_ROOT}  -Xcuda-ptxas --maxrregcount=120 -fopenmp-new-driver -foffload-lto -fopenmp-assume-no-thread-state
 endif
 endif
+
+
+# LLVM Clang Compiler 
+ifeq ($(COMPILER),armclang)
+  CC = armclang++
+	CFLAGS += -fopenmp
+ifeq ($(ENABLE_OMP_OFFLOAD),1)
+  #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda  -fopenmp-cuda-mode 
+  #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda -Xopenmp-target --cuda-path=${OLCF_CUDA_ROOT}  -Xcuda-ptxas --maxrregcount=60 -fopenmp-cuda-mode
+  #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda -Xopenmp-target --cuda-path=${OLCF_CUDA_ROOT}    -fopenmp-new-driver -foffload-lto 
+  #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda -Xopenmp-target --cuda-path=${OLCF_CUDA_ROOT}  -Xcuda-ptxas --maxrregcount=120 -fopenmp-new-driver -foffload-lto -fopenmp-assume-no-thread-state
+endif
+endif
+
+# LLVM Clang Compiler 
+ifeq ($(COMPILER),FCC)
+  CC = FCC
+	CFLAGS += -Kopenmp
+	#-Kzfill = 100
+ifeq ($(ENABLE_OMP_OFFLOAD),1)
+  #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda  -fopenmp-cuda-mode 
+  #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda -Xopenmp-target --cuda-path=${OLCF_CUDA_ROOT}  -Xcuda-ptxas --maxrregcount=60 -fopenmp-cuda-mode
+  #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda -Xopenmp-target --cuda-path=${OLCF_CUDA_ROOT}    -fopenmp-new-driver -foffload-lto 
+  #CFLAGS += -fopenmp -fopenmp-targets=nvptx64-nvidia-cuda -Xopenmp-target --cuda-path=${OLCF_CUDA_ROOT}  -Xcuda-ptxas --maxrregcount=120 -fopenmp-new-driver -foffload-lto -fopenmp-assume-no-thread-state
+endif
+endif
+
+
+
 
 # IBM XL Compiler
 ifeq ($(COMPILER),xl)
@@ -105,7 +135,7 @@ endif
 ifeq ($(ENABLE_OMP_OFFLOAD),1)
   CFLAGS += -DUSE_OMP_OFFLOAD
 else
-  CFLAGS += -fopenmp -DGRAPH_FT_LOAD=1 #-I/usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/
+  CFLAGS += -fopenmp -DGRAPH_FT_LOAD=4 #-I/usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/
 endif
 
 # Compiler Trace  

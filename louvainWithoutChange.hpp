@@ -39,74 +39,31 @@ struct clmap_t {
 #define CLMAP_MAX_NUM 32
 #define COUNT_MAX_NUM 32
 
-
-static const int ZFILL_DISTANCE = 100;
-
-/* x-byte cache lines */
-static const int ELEMS_PER_CACHE_LINE = 256 / sizeof(GraphWeight);
-//CACHE_LINE_SIZE_BYTES / sizeof(GraphWeight);
-
-/* Offset from a[j] to zfill */
-static const int ZFILL_OFFSET = ZFILL_DISTANCE * ELEMS_PER_CACHE_LINE;
-
-static inline void zfill(const GraphWeight * a) 
-{ asm volatile("dc zva, %0": : "r"(a)); }
-//#endif
-
-
-
 void sumVertexDegree(const Graph &g, std::vector<GraphWeight> &vDegree, std::vector<Comm> &localCinfo)
 {
   const GraphElem nv = g.get_nv();
 
-/**
 #ifdef OMP_SCHEDULE_RUNTIME
 #pragma omp parallel for default(none), shared(g, vDegree, localCinfo), schedule(runtime)
 #else
 #pragma omp parallel for default(none), shared(g, vDegree, localCinfo), firstprivate(nv) schedule(guided)
 #endif
-*/
+  for (GraphElem i = 0; i < nv; i++) {
+    GraphElem e0, e1;
+    GraphWeight tw = 0.0;
 
-#pragma omp parallel
-{
-        int const nthreads = omp_get_num_threads();             
-        int const tid = omp_get_thread_num();
+    g.edge_range(i, e0, e1);
 
-  #pragma omp for
-    for (GraphElem i = 0; i < nv; i+=ELEMS_PER_CACHE_LINE) {
-      GraphElem e0, e1;
-      GraphWeight tw = 0.0;
-
-      g.edge_range(i, e0, e1);
-
-      size_t nbrscan_mem =g.edge_indices_[i+1]-g.edge_indices_[i];                          
-      size_t const nbr_scan_chunk = (nbrscan_mem) / nthreads;                          
-      const GraphWeight * zfill_limit = vDegree.data() + ( tid + 1 )*nbr_scan_chunk - ZFILL_OFFSET;
-
-
-      const GraphWeight * vertexDegreej = vDegree.data() + i;
-                                                                                                            
-      if (vertexDegreej+ZFILL_OFFSET < zfill_limit) {
-          zfill(vertexDegreej+ZFILL_OFFSET);
-      } 
-  
-      #pragma omp parallel for
-      for(size_t j=0; j < ELEMS_PER_CACHE_LINE; j+=1){
-
-        for (GraphElem k = g.edge_indices_[i+j]; k < g.edge_indices_[i+j+1]; ++k) {
-          const Edge &edge = g.get_edge(k);
-          //tw += edge.weight_;
-          vDegree[i+j] += edge.weight_;
-        }
-
-          //vDegree[i] = tw;
-      }//index j
-        localCinfo[i].degree = tw;
-        localCinfo[i].size = 1L;
+    for (GraphElem k = e0; k < e1; k++) {
+      const Edge &edge = g.get_edge(k);
+      tw += edge.weight_;
     }
 
-  }//parallel region
-
+    vDegree[i] = tw;
+   
+    localCinfo[i].degree = tw;
+    localCinfo[i].size = 1L;
+  }
 } // sumVertexDegree
 
 GraphWeight calcConstantForSecondTerm(const std::vector<GraphWeight> &vDegree)
