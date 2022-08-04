@@ -81,8 +81,8 @@ void sumVertexDegree(const Graph &g, std::vector<GraphWeight> &vDegree, std::vec
 
       g.edge_range(i, e0, e1);
 
-      size_t nbrscan_mem =g.edge_indices_[i+1]-g.edge_indices_[i];
-      //size_t nbrscan_mem =e1-e0;                          
+      //size_t nbrscan_mem =g.edge_indices_[i+1]-g.edge_indices_[i];
+      size_t nbrscan_mem =e1-e0;                          
       size_t const nbr_scan_chunk = (nbrscan_mem) / nthreads;                          
       const GraphWeight * zfill_limit = vDegree.data() + ( tid + 1 )*nbr_scan_chunk - ZFILL_OFFSET;
     
@@ -90,18 +90,22 @@ void sumVertexDegree(const Graph &g, std::vector<GraphWeight> &vDegree, std::vec
 
         const GraphWeight * vertexDegreej = vDegree.data() + j;
                                                                                                             
-      if (vertexDegreej+ZFILL_OFFSET < zfill_limit) {
-          zfill(vertexDegreej+ZFILL_OFFSET);
-      } 
-      
+        if (vertexDegreej+ZFILL_OFFSET < zfill_limit) {
+            zfill(vertexDegreej+ZFILL_OFFSET);
+        } 
+      //}
       //#pragma omp parallel for
       //#pragma omp simd
       //for(size_t j=0; j < ELEMS_PER_CACHE_LINE; j+=1){
 
-        for (GraphElem k = g.edge_indices_[i]+j; k < g.edge_indices_[i]+j+ELEMS_PER_CACHE_LINE; ++k) {
+        for (GraphElem k = g.edge_indices_[i]+j; k < g.edge_indices_[i]+j+ELEMS_PER_CACHE_LINE && g.edge_indices_[i]+nbrscan_mem;++k) {
+          /**if(k>nbrscan_mem){
+              i++;
+          }*/
           const Edge &edge = g.get_edge(k);
           //tw += edge.weight_;
           vDegree[i+j] += edge.weight_;
+          //std::cout << "loop counts: " << k << std::endl;
         }
 
           //vDegree[i] = tw;
